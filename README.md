@@ -1,2 +1,2 @@
 # Training_Analysis
-My training progects at Data Analysis
+My training projects at Data Analysis
