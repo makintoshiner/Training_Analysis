@@ -1,0 +1,25 @@
+== Запити з командою ORDER BY:
+
+select id, occurred_at, total_amt_usd
+from orders
+order by occurred_at
+
+select id, account_id, total_amt_usd
+from orders
+order by total_amt_usd DESC
+LIMIT 5 
+
+select id, account_id, total_amt_usd
+from orders
+order by total_amt_usd
+LIMIT 20 
+
+Part II
+
+select id, account_id, total_amt_usd
+from orders
+order by account_id, total_amt_usd desc
+
+select id, account_id, total_amt_usd
+from orders
+order by total_amt_usd desc, account_id
