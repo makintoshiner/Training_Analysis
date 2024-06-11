@@ -1,0 +1,9 @@
+Функції агрегації:
+
+select id, account_id, standard_amt_usd / standard_qty
+from orders
+limit 10
+
+select id, account_id, (poster_amt_usd / (standard_amt_usd + gloss_amt_usd + poster_amt_usd)) * 100 as perc_poster
+from orders
+limit 10
