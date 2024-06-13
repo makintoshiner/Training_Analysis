@@ -1,0 +1,96 @@
+      INNER JOIN
+
+select *
+from accounts 
+join orders on accounts.id = orders.account_id
+
+select orders.standard_qty, orders.gloss_qty, orders.poster_qty, accounts.website, accounts.primary_poc
+from accounts 
+join orders on accounts.id = orders.account_id
+
+SELECT a.name, a.primary_poc, w.occurred_at, w.channel
+FROM web_events w
+JOIN accounts a
+on w.account_id = a.id
+WHERE a.name = 'Walmart'
+
+SELECT r.name rn, s.name sn, a.name an
+FROM accounts a
+JOIN sales_reps s
+on a.sales_rep_id = s.id
+JOIN region r
+ON s.region_id = r.id
+order by a.name
+
+SELECT r.name rn, a.name an, (o.total_amt_usd / (o.total+0.01)) unit_price
+FROM accounts a
+JOIN sales_reps s
+on a.sales_rep_id = s.id
+JOIN region r
+ON s.region_id = r.id
+JOIN orders o
+ON a.id = o.account_id
+
+select r.name as r_name, s.name as s_name, a.name as a_name
+from sales_reps s
+join region r
+ON s.region_id = r.id
+join accounts a
+ON s.id = a.sales_rep_id
+where r.name = 'Midwest'
+
+select r.name as r_name, s.name as s_name, a.name as a_name
+from sales_reps s
+join region r
+ON s.region_id = r.id
+join accounts a
+ON s.id = a.sales_rep_id
+where r.name = 'Midwest'
+and s.name LIKE 'S%'
+order by a.name
+
+select r.name as r_name, s.name as s_name, a.name as a_name
+from sales_reps s
+join region r
+ON s.region_id = r.id
+join accounts a
+ON s.id = a.sales_rep_id
+where r.name = 'Midwest'
+and s.name LIKE '% K%'
+order by a.name
+
+select r.name as r_name, a.name as a_name, o.total_amt_usd / (o.total +0.01) as unit_price
+from sales_reps s
+join region r
+ON s.region_id = r.id
+join accounts a
+ON s.id = a.sales_rep_id
+join orders o
+ON a.id = o.account_id
+where o.standard_qty > 100
+
+select r.name as r_name, a.name as a_name, o.total_amt_usd / (o.total +0.01) as unit_price
+from sales_reps s
+join region r
+ON s.region_id = r.id
+join accounts a
+ON s.id = a.sales_rep_id
+join orders o
+ON a.id = o.account_id
+where o.standard_qty > 100
+and o.poster_qty > 50
+order by unit_price
+
+select a.name, w.channel
+from web_events w
+join accounts a
+ON w.account_id = a.id
+where a.id = 1001
+
+SELECT o.occurred_at, a.name, o.total, o.total_amt_usd
+FROM accounts a
+JOIN orders o
+ON o.account_id = a.id
+WHERE o.occurred_at BETWEEN '01-01-2015' AND '01-01-2016'
+ORDER BY o.occurred_at DESC;
+
