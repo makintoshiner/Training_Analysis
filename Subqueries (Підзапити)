@@ -1,0 +1,178 @@
+
+select channel, avg(event_count) avg_count
+from
+(select date_trunc('day', occurred_at), channel, count(*) event_count
+from web_events
+group by 1,2
+order by 3 desc
+ ) sub
+ group by 1
+
+select avg(standard_qty) avg_std, avg(gloss_qty) avg_gls, avg(poster_qty) avg_pst, sum(total_amt_usd) total_usd
+from orders
+where date_trunc('month', occurred_at) =
+    (select min(date_trunc('month', occurred_at)) first_month
+    from orders)
+
+select sub3.sales_name, sub3.region, sub3.sum_total
+from
+(select region, max(sum_total) sum_total
+from
+(select r.name region, s.name sales_name, sum(total_amt_usd)       sum_total
+   from orders o
+   join accounts a
+   ON o.account_id=a.id
+   join sales_reps s
+   ON s.id=a.sales_rep_id
+   join region r
+   ON r.id=s.region_id
+   group by 1,2
+) sub1
+group by 1
+) sub2
+join
+(select r.name region, s.name sales_name, sum(total_amt_usd)       sum_total
+   from orders o
+   join accounts a
+   ON o.account_id=a.id
+   join sales_reps s
+   ON s.id=a.sales_rep_id
+   join region r
+   ON r.id=s.region_id
+   group by 1,2
+) sub3
+on sub2.region=sub3.region and sub2.sum_total=sub3.sum_total
+
+select r.name, count(o.id)
+from orders o
+join accounts a
+ON o.account_id=a.id
+join sales_reps s
+ON s.id=a.sales_rep_id
+join region r
+ON r.id=s.region_id
+group by 1
+having sum(o.total_amt_usd) =
+  (select max(sum_total)
+  from
+   (select r.name region, sum(o.total_amt_usd) sum_total
+   from orders o
+   join accounts a
+   ON o.account_id=a.id
+   join sales_reps s
+   ON s.id=a.sales_rep_id
+   join region r
+   ON r.id=s.region_id
+   group by 1))
+
+select count(*)
+from
+  (select a.name
+  from accounts a
+  join orders o
+  ON a.id=o.account_id
+  group by 1
+  having  sum(o.total) >
+   (select total
+   from
+    (select a.name name, sum(o.standard_qty) sum_std, sum(o.total) total
+    from accounts a
+    join orders o
+    ON a.id=o.account_id
+    group by 1
+    order by 2 desc
+    limit 1) sub1)
+    ) sub2
+
+
+select w.channel, count(*)
+from accounts a
+join web_events w
+ON a.id=w.account_id
+where a.name =
+
+(select name
+from
+(
+select a.name name, sum(total_amt_usd) total_usd
+from orders o
+join accounts a
+ON o.account_id=a.id
+join web_events w
+On a.id=w.account_id
+group by 1
+order by 2 desc
+limit 1
+) sub)
+
+group by 1
+
+select avg(total)
+from
+(select account_id, sum(total_amt_usd) total
+from orders
+group by 1
+order by 2 desc
+limit 10) sub
+
+
+SELECT AVG(avg_amt) 
+FROM 
+  (SELECT o.account_id, AVG(o.total_amt_usd) avg_amt 
+  FROM orders o 
+  GROUP BY 1 
+  HAVING AVG(o.total_amt_usd) > 
+    (SELECT AVG(o.total_amt_usd) avg_all 
+     FROM orders o)) temp_table;
+
+
+        WITH
+
+
+WITH t1 AS (
+     SELECT s.name rep_name, r.name region_name, SUM(o.total_amt_usd) total_amt
+      FROM sales_reps s
+      JOIN accounts a
+      ON a.sales_rep_id = s.id
+      JOIN orders o
+      ON o.account_id = a.id
+      JOIN region r
+      ON r.id = s.region_id
+      GROUP BY 1,2
+      ORDER BY 3 DESC), 
+t2 AS (
+      SELECT region_name, MAX(total_amt) total_amt
+      FROM t1
+      GROUP BY 1)
+SELECT t1.rep_name, t1.region_name, t1.total_amt
+FROM t1
+JOIN t2
+ON t1.region_name = t2.region_name AND t1.total_amt = t2.total_amt;
+
+
+WITH t1 AS (
+      SELECT r.name region_name, SUM(o.total_amt_usd) total_amt
+      FROM sales_reps s
+      JOIN accounts a
+      ON a.sales_rep_id = s.id
+      JOIN orders o
+      ON o.account_id = a.id
+      JOIN region r
+      ON r.id = s.region_id
+      GROUP BY r.name), 
+t2 AS (
+      SELECT MAX(total_amt)
+      FROM t1)
+SELECT r.name, COUNT(o.total) total_orders
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY r.name
+HAVING SUM(o.total_amt_usd) = (SELECT * FROM t2);
+
+
+
