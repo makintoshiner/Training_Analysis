@@ -1,0 +1,59 @@
+
+
+select standard_amt_usd, sum(standard_amt_usd) over (order by occurred_at)
+from orders
+
+select standard_amt_usd
+, DATE_TRUNC('year', occurred_at) date_year
+, sum(standard_amt_usd) over (partition by (DATE_TRUNC('year', occurred_at)) order by occurred_at)
+from orders
+
+            RANK
+
+select id, account_id, total,
+   rank() over (partition by account_id order by total desc)
+from orders
+
+            ALIAS
+
+SELECT id,
+       account_id,
+       DATE_TRUNC('year',occurred_at) AS year,
+       DENSE_RANK() OVER account_year_window AS dense_rank,
+       total_amt_usd,
+       SUM(total_amt_usd) OVER account_year_window AS sum_total_amt_usd,
+       COUNT(total_amt_usd) OVER account_year_window AS count_total_amt_usd,
+       AVG(total_amt_usd) OVER account_year_window AS avg_total_amt_usd,
+       MIN(total_amt_usd) OVER account_year_window AS min_total_amt_usd,
+       MAX(total_amt_usd) OVER account_year_window AS max_total_amt_usd
+FROM orders
+WINDOW account_year_window as (PARTITION BY account_id ORDER BY DATE_TRUNC('year',occurred_at))
+
+          LAG, LEAD
+
+SELECT occurred_at,
+       total_amt_usd,
+       LEAD(total_amt_usd) OVER (ORDER BY occurred_at) AS lead,
+       LEAD(total_amt_usd) OVER (ORDER BY occurred_at) - total_amt_usd AS lead_difference
+FROM (
+SELECT occurred_at,
+       SUM(total_amt_usd) AS total_amt_usd
+  FROM orders 
+ GROUP BY 1
+) sub
+
+          NTILE
+
+select account_id, occurred_at, standard_qty,
+      ntile(4) over (PARTITION BY account_id order by standard_qty) as standard_quartile
+from orders
+
+select account_id, occurred_at, gloss_qty,
+      ntile(2) over (PARTITION BY account_id order by gloss_qty) as gloss_half
+from orders
+ORDER BY account_id DESC
+
+select account_id, occurred_at, total_amt_usd,
+      ntile(100) over (PARTITION BY account_id order by total_amt_usd) as total_percentile
+from orders
+
